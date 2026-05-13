@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db 
+
+  backend:
+    build: ./backend_task3
+    container_name: backend_container
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      PORT: 3000
+      MONGO_URI: mongodb://mongo:27017/mern_tasks
+      JWT_SECRET: mernsecret
+
+  frontend:
+    build: ./frontend_task3
+    container_name: frontend_container
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
