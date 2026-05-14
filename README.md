@@ -61,7 +61,7 @@ project-root/
 │   │   ├── mongoose/
 │   │   ├── routes/
 │   │   ├── utils/
-│   │   └── controllers/
+│   │   
 │   │
 │   ├── Dockerfile
 │   ├── package.json
@@ -99,9 +99,9 @@ JWT_SECRET=your_secret_key
 ## Clone Repository
 
 ```bash
-git clone https://github.com/your-username/mern-task-manager.git
+git clone https://github.com/Prem-0007/MERN_INTERN_TASK3-4.git
 
-cd mern-task-manager
+cd MERN_INTERN_TASK3-4
 ```
 
 ---
@@ -117,7 +117,7 @@ npm install
 ## Run Backend
 
 ```bash
-npm run dev
+node index.mjs
 ```
 
 Backend runs on:
