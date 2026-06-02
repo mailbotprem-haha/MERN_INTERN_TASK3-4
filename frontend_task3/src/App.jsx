@@ -3,31 +3,25 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const token =
-    localStorage.getItem("token");
-
   return (
     <Routes>
       <Route
         path="/login"
         element={<Login />}
       />
-
       <Route
         path="/signup"
         element={<Signup />}
       />
-
       <Route
         path="/"
         element={
-          token ? (
+          localStorage.getItem("token") ? (
             <Dashboard />
           ) : (
             <Navigate to="/login" />
