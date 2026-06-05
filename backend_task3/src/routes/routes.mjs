@@ -1,169 +1,51 @@
-import { Router } from "express";
-import { Task } from "../mongoose/schemas/task.mjs";
-import { checkSchema } from "express-validator";
+import router from "./src/routes/routes.mjs";
+import authRoutes from "./src/routes/authRoutes.mjs";
+import blogRoutes from "./src/routes/blogRoutes.mjs";
+import mongoose from "mongoose";
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 
-import { createValidationSchema } from "../utils/validationSchema.mjs";
-import { authMiddleware } from "../middlewares/authMiddleware.mjs";
+dotenv.config();
 
-const router = Router();
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-router.get(
-  "/",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const tasks = await Task.find({
-        user: req.user.id,
-      });
-
-      return res.status(200).send(tasks);
-    } catch (err) {
-      console.log(err);
-
-      return res.sendStatus(500);
-    }
-  }
-);
-
-router.get(
-  "/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const foundTask = await Task.findOne({
-        _id: req.params.id,
-        user: req.user.id,
-      });
-
-      if (!foundTask) {
-        return res.sendStatus(404);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "https://merninterninternspark.netlify.app",
+      ];
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith("--merninterninternspark.netlify.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
       }
-
-      return res.status(200).send(foundTask);
-    } catch (err) {
-      console.log(err);
-
-      return res.sendStatus(500);
-    }
-  }
+    },
+    credentials: true,
+  })
 );
 
-router.post(
-  "/",
-  authMiddleware,
-  checkSchema(createValidationSchema),
-  async (req, res) => {
-    try {
-      const newTask = new Task({
-        ...req.body,
-        user: req.user.id,
-      });
+app.use(express.json());
+app.use("/api/tasks", router);
+app.use("/api/auth", authRoutes);
+app.use("/api/blogs", blogRoutes);
 
-      const savedTask =
-        await newTask.save();
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to database"))
+  .catch((err) => console.log(err));
 
-      return res.status(201).send(
-        savedTask
-      );
-    } catch (err) {
-      console.log(err);
+app.get("/", (req, res) => {
+  res.status(200).send({ msg: "Hello I'm MERN Intern" });
+});
 
-      return res.sendStatus(400);
-    }
-  }
-);
-
-router.put(
-  "/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const updatedTask =
-        await Task.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            user: req.user.id,
-          },
-          req.body,
-          {
-            returnDocument: "after",
-            runValidators: true,
-          }
-        );
-
-      if (!updatedTask) {
-        return res.sendStatus(404);
-      }
-
-      return res
-        .status(200)
-        .send(updatedTask);
-    } catch (err) {
-      console.log(err);
-
-      return res.sendStatus(400);
-    }
-  }
-);
-
-router.patch(
-  "/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const updatedTask =
-        await Task.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            user: req.user.id,
-          },
-          req.body,
-          {
-            returnDocument: "after",
-            runValidators: true,
-          }
-        );
-
-      if (!updatedTask) {
-        return res.sendStatus(404);
-      }
-
-      return res
-        .status(200)
-        .send(updatedTask);
-    } catch (err) {
-      console.log(err);
-
-      return res.sendStatus(400);
-    }
-  }
-);
-
-router.delete(
-  "/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const deletedTask =
-        await Task.findOneAndDelete({
-          _id: req.params.id,
-          user: req.user.id,
-        });
-
-      if (!deletedTask) {
-        return res.sendStatus(404);
-      }
-
-      return res.status(200).send({
-        message:
-          "Task deleted successfully",
-      });
-    } catch (err) {
-      console.log(err);
-
-      return res.sendStatus(500);
-    }
-  }
-);
-
-export default router;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
